@@ -1,16 +1,16 @@
 class Thefuck < Formula
   desc "Programatically correct mistyped console commands"
   homepage "https://github.com/nvbn/thefuck"
-  url "https://pypi.python.org/packages/source/t/thefuck/thefuck-3.4.tar.gz"
-  sha256 "4e1a6e8ea154d7aae67f0935e5eeab1b243451a5537b70e919fec6f823a680b6"
+  url "https://pypi.python.org/packages/source/t/thefuck/thefuck-3.6.tar.gz"
+  sha256 "5a3ff49d2b397683b5d50fcc62b1b7a2ab17970f88c3d7dd8339d91add5edc2b"
 
   head "https://github.com/nvbn/thefuck.git"
 
   bottle do
     cellar :any_skip_relocation
-    sha256 "ea900ff0423a690981f7b76fa6d34f1ef167748a11db1c1e56dfa42d7c9b4175" => :el_capitan
-    sha256 "2faf3b98004bab4161264b29c83cf3cb80e02779e0f6ebb2df82956301e9e3af" => :yosemite
-    sha256 "e4ae4a088558bbed9dfda1a77f668bb0da68df76b4d1244ee5730cbdb1734f4a" => :mavericks
+    sha256 "b59c39fbf59e5d11764129390d6be5ba2d9130aba1d36a424f46047c56a5bfbe" => :el_capitan
+    sha256 "40e0a0ae2affb9bc8be1b2571c90c2d7cbe87e1b92e8cf34c01daabcf1e50283" => :yosemite
+    sha256 "6214b29df08ab0471785add507dfcba7adfd15dba6e77201fbe382f33bf72f9c" => :mavericks
   end
 
   depends_on :python if MacOS.version <= :snow_leopard
@@ -50,17 +50,6 @@ class Thefuck < Formula
     sha256 "30f98b66f3fe1069c529a491597d34a1c224a68640c82caf2ade5f88aa1405e8"
   end
 
-  # FIXME: Remove this patch in 3.5!
-  #
-  # Patch sent to upstream: https://github.com/nvbn/thefuck/pull/473
-  #
-  # Why this patch is needed: when switching to/from a virtualenv while using
-  # this software might turn its cache file incompatible between system's and
-  # virtualenv's Python. The database packages used when creating and reading
-  # the cache file must be the very same. If this package – e.g. gdbm – isn't
-  # available – mostly when using system's Python – an ImportError is raised.
-  patch :DATA
-
   def install
     xy = Language::Python.major_minor_version "python"
     ENV.prepend_create_path "PYTHONPATH", libexec/"vendor/lib/python#{xy}/site-packages"
@@ -95,18 +84,3 @@ class Thefuck < Formula
     assert_match /^Seems like .+fuck.+ alias isn't configured.+/, shell_output("#{bin}/fuck").chomp
   end
 end
-
-__END__
-diff --git a/thefuck/utils.py b/thefuck/utils.py
-index b1bbd42..4ae5898 100644
---- a/thefuck/utils.py
-+++ b/thefuck/utils.py
-@@ -228,7 +228,7 @@ def cache(*depends_on):
-                     value = fn(*args, **kwargs)
-                     db[key] = {'etag': etag, 'value': value}
-                     return value
--        except shelve_open_error:
-+        except (shelve_open_error, ImportError):
-             # Caused when going from Python 2 to Python 3 and vice-versa
-             warn("Removing possibly out-dated cache")
-             os.remove(cache_path)
